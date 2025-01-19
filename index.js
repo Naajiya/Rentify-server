@@ -6,6 +6,7 @@ const cors= require('cors')
 // client request to accepts in server side
 
 const router=require('./Routes/router')
+require('./db/connection')
 
 const rentServer = express()
 rentServer.use(cors())
