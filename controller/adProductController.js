@@ -1,5 +1,9 @@
 const products = require('../modal/adProductModal')
 
+
+
+// add product
+
 exports.addProduct = async (req, res) => {
 
     console.log('inides add project');
@@ -45,4 +49,35 @@ exports.addProduct = async (req, res) => {
         res.status(401).json(err)
     }
 
+}
+
+
+
+// get all products
+exports.getAllProduct = async(req,res)=>{
+    console.log('inside get all products')
+    try{
+        const allProduct = await products.find()
+        console.log(allProduct)
+        res.status(200).json(allProduct)
+    }catch(err){
+        res.status(401).json(err)
+    }
+}
+
+// delete product
+exports.deleteProduct = async(req,res)=>{
+    console.log('inside delete products')
+
+    const {proId}=req.params
+
+    try{
+
+        const deleteProduct= await products.findByIdAndDelete({_id:proId})
+        res.status(200).json(deleteProduct)
+
+    }catch(err){
+        res.status(401).json(err)
+        console.log(err)
+    }
 }
