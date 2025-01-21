@@ -1,4 +1,4 @@
-const users=require('../modal/userModal')
+const users=require('../modal/userModal')       
 
 exports.userOtp = async (req,res)=>{
     console.log('otps')
