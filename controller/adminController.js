@@ -9,6 +9,9 @@ const newAdmin = new admins({
 newAdmin.save().then(() => console.log('Admin saved successfully'))
     .catch(err => console.error('Error saving admin:', err));
 
+
+// admin login
+
 exports.adminLogin = async (req, res) => {
     console.log('inside admin login');
     const { email, password } = req.body;
@@ -29,3 +32,5 @@ exports.adminLogin = async (req, res) => {
         res.status(401).json(err)
     }
 }
+
+
