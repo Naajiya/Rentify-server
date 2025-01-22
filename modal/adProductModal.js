@@ -15,8 +15,9 @@ const productSchema = new mongoose.Schema({
     },
 
     category: {
-        type: String,
-        required: true
+        Men: { type: Boolean, default: false },
+        Women: { type: Boolean, default: false },
+        Furniture: { type: Boolean, default: false }
     },
 
     price: {
@@ -28,6 +29,12 @@ const productSchema = new mongoose.Schema({
         S: { type: Boolean, default: false },
         M: { type: Boolean, default: false },
         L: { type: Boolean, default: false }
+    },
+
+    availability:{
+        type:Boolean,
+        default:false,
+        required:true
     },
 
     imgOne: {

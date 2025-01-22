@@ -8,7 +8,7 @@ exports.addProduct = async (req, res) => {
 
     console.log('inides add project');
 
-    const { name, description, category, price } = req.body;
+    const { name, description, price ,availability} = req.body;
     const { imgOne, imgTwo } = req.files;
     // const imgOne= req.file.filename
     // const imgTwo= req.file.filename
@@ -22,13 +22,19 @@ exports.addProduct = async (req, res) => {
     const imgOneFilename = imgOne[0].filename;
     const imgTwoFilename = imgTwo[0].filename;
 
+    const category={
+        Men: req.body.category.includes('S'),
+        Women: req.body.category.includes('M'),
+        Furniture: req.body.category.includes('L'),
+    }
+
     const size = {
         S: req.body.size.includes('S'),
         M: req.body.size.includes('M'),
         L: req.body.size.includes('L'),
     };
 
-    console.log(name, description, category, price, size, imgOneFilename, imgTwoFilename);
+    console.log(name, description, category, price, size,availability, imgOneFilename, imgTwoFilename);
 
 
 
@@ -39,7 +45,7 @@ exports.addProduct = async (req, res) => {
         if (existingProduct) {
             res.status(406).json("product already added")
         } else {
-            const newProduct = new products({ name, description, category, price, size, imgOne: imgOneFilename, imgTwo: imgTwoFilename})
+            const newProduct = new products({ name, description, category, price, size,availability, imgOne: imgOneFilename, imgTwo: imgTwoFilename})
             await newProduct.save()
             res.status(200).json(newProduct)
         }
