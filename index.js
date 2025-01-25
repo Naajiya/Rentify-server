@@ -13,6 +13,8 @@ rentServer.use(cors())
 rentServer.use(express.json()) //convert json to js object (it act as middleware)
 rentServer.use(router)
 
+rentServer.use('/uploads', express.static('./uploads'))
+
 const PORT =3000 || process.env.PORT
 
 // to run

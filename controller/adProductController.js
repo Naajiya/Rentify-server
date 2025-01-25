@@ -34,7 +34,7 @@ exports.addProduct = async (req, res) => {
         L: req.body.size.includes('L'),
     };
 
-    console.log(name, description, category, price, size,availability, imgOneFilename, imgTwoFilename);
+    // console.log(name, description, category, price, size,availability, imgOneFilename, imgTwoFilename);
 
 
 
@@ -61,10 +61,10 @@ exports.addProduct = async (req, res) => {
 
 // get all products
 exports.getAllProduct = async(req,res)=>{
-    console.log('inside get all products')
+    // console.log('inside get all products')
     try{
         const allProduct = await products.find()
-        console.log(allProduct)
+        // console.log(allProduct)
         res.status(200).json(allProduct)
     }catch(err){
         res.status(401).json(err)
@@ -87,3 +87,35 @@ exports.deleteProduct = async(req,res)=>{
         console.log(err)
     }
 }
+
+exports.updateProduct = async (req, res) => {
+    console.log('update product');
+    const { pid } = req.params;
+    const { name, description, category, price, size, availability } = req.body;
+    const { imgOne, imgTwo } = req.files;
+
+    // Update only if new images are provided
+    let updateFields = { name, description, category, price, size, availability };
+    
+    if (imgOne) {
+        updateFields.imgOne = imgOne[0]?.filename;
+    }
+
+    if (imgTwo) {
+        updateFields.imgTwo = imgTwo[0]?.filename;
+    }
+
+    try {
+        const updateProduct = await products.findByIdAndUpdate({ _id: pid }, updateFields, { new: true });
+        res.status(200).json(updateProduct);
+    } catch (err) {
+        res.status(401).json(err);
+        console.log(err);
+    }
+};
+
+
+// const imgOneFilename = imgOne[0].filename;
+// const imgTwoFilename = imgTwo[0].filename;
+
+// const prjctImg = req.file.filename
