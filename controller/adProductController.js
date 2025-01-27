@@ -23,15 +23,16 @@ exports.addProduct = async (req, res) => {
     const imgTwoFilename = imgTwo[0].filename;
 
     const category={
-        Men: req.body.category.includes('S'),
-        Women: req.body.category.includes('M'),
-        Furniture: req.body.category.includes('L'),
+        Men: req.body.category.includes('Men'),
+        Women: req.body.category.includes('Women'),
+        Furniture: req.body.category.includes('Furniture'),
     }
 
     const size = {
         S: req.body.size.includes('S'),
         M: req.body.size.includes('M'),
         L: req.body.size.includes('L'),
+        Freeize: req.body.size.includes('Freeize')
     };
 
     // console.log(name, description, category, price, size,availability, imgOneFilename, imgTwoFilename);
@@ -90,13 +91,14 @@ exports.deleteProduct = async(req,res)=>{
 
 exports.updateProduct = async (req, res) => {
     console.log('update product');
+    console.log(req.files); // Add logging to inspect req.files
+
     const { pid } = req.params;
     const { name, description, category, price, size, availability } = req.body;
-    const { imgOne, imgTwo } = req.files;
+    const { imgOne, imgTwo } = req.files || {}; // Safely destructuring
 
-    // Update only if new images are provided
     let updateFields = { name, description, category, price, size, availability };
-    
+
     if (imgOne) {
         updateFields.imgOne = imgOne[0]?.filename;
     }
@@ -106,16 +108,34 @@ exports.updateProduct = async (req, res) => {
     }
 
     try {
-        const updateProduct = await products.findByIdAndUpdate({ _id: pid }, updateFields, { new: true });
+        const updateProduct = await products.findByIdAndUpdate(pid, updateFields, { new: true });
         res.status(200).json(updateProduct);
     } catch (err) {
-        res.status(401).json(err);
-        console.log(err);
+        res.status(500).json({ message: 'Internal Server Error', error: err });
+        console.error(err);
     }
 };
 
 
-// const imgOneFilename = imgOne[0].filename;
-// const imgTwoFilename = imgTwo[0].filename;
 
-// const prjctImg = req.file.filename
+exports.productCategory=async(req,res)=>{
+    
+    console.log('products by category')
+    const {cat}=req.params
+
+    const query = { [`category.${cat}`]: true };
+
+    try{
+        const productbycategory = await products.find(query)
+
+        if (!productbycategory.length) {
+            return res.status(404).json({ message: 'No products found for this category' });
+        }
+        res.status(200).json(productbycategory);
+    }catch(err){
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+
+    
+}

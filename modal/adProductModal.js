@@ -9,7 +9,7 @@ const productSchema = new mongoose.Schema({
         unique: true
     },
 
-    description: {
+    description: {  
         type: String,
         required: true
     },
@@ -28,7 +28,8 @@ const productSchema = new mongoose.Schema({
     size: {
         S: { type: Boolean, default: false },
         M: { type: Boolean, default: false },
-        L: { type: Boolean, default: false }
+        L: { type: Boolean, default: false },
+        Freeize:{type: Boolean, default: false}
     },
 
     availability:{
