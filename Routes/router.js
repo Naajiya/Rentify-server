@@ -32,4 +32,6 @@ router.post('/user-login',userController.userLogin)
 
 router.get('/user-category/:cat', adProductController.productCategory)
 
+router.get('/product-details/:proId',userController.viewProduct)
+
 module.exports = router

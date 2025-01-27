@@ -65,7 +65,8 @@ exports.getAllProduct = async(req,res)=>{
     // console.log('inside get all products')
     try{
         const allProduct = await products.find()
-        // console.log(allProduct)
+        
+        console.log(allProduct)
         res.status(200).json(allProduct)
     }catch(err){
         res.status(401).json(err)
@@ -126,7 +127,7 @@ exports.productCategory=async(req,res)=>{
     const query = { [`category.${cat}`]: true };
 
     try{
-        const productbycategory = await products.find(query)
+        const productbycategory = await products.find(query)    
 
         if (!productbycategory.length) {
             return res.status(404).json({ message: 'No products found for this category' });

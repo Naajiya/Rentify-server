@@ -1,5 +1,6 @@
 const users = require('../modal/userModal')
 const jwt=require('jsonwebtoken')
+const products = require('../modal/adProductModal')
 
 // register
 exports.userRegister = async (req, res) => {
@@ -44,4 +45,23 @@ exports.userLogin= async (req,res)=>{
         console.log(err)
     }
 }
+
+
+exports.viewProduct = async (req, res) => {
+    const { proId } = req.params;
+    try {
+        // Fetch the product using findOne (assuming proId is unique)
+        const productDetails = await products.findOne({_id:proId});
+        console.log(productDetails);
+
+        if (productDetails) {
+            res.status(200).json(productDetails);
+        } else {
+            res.status(404).json({ message: "Product not available" });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "An error occurred while fetching the product details" });
+    }
+};
 
