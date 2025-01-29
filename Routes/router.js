@@ -3,7 +3,8 @@ const adminController=require('../controller/adminController')
 const jwitMiddlware = require('../middlewares/jwitMiddlware')
 const multerMiddleware= require('../middlewares/multerMiddleware')
 const adProductController = require('../controller/adProductController')
-const userController = require('../controller/userController')
+const userController = require('../controller/userController');
+const jwtMiddlware = require('../middlewares/jwitMiddlware');
 
 
 const router = new express.Router();
@@ -33,5 +34,9 @@ router.post('/user-login',userController.userLogin)
 router.get('/user-category/:cat', adProductController.productCategory)
 
 router.get('/product-details/:proId',userController.viewProduct)
+
+router.post('/add-to-cart',jwitMiddlware,userController.addToCart)
+
+router.get('/get-carts',jwitMiddlware,userController.getCarts)
 
 module.exports = router

@@ -13,7 +13,14 @@ const userSchema = new mongoose.Schema({
     password:{
         type:String,
         required:true
-    }
+    },
+    cart:[
+        {
+            productId:{ type:mongoose.Schema.Types.ObjectId, ref:'products'},
+            quantity:{type:Number, default:1},
+            days:{type:Number, default:2}
+        },
+    ],
 
 })
 
