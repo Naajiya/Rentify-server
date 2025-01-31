@@ -8,7 +8,7 @@ exports.userRegister = async (req, res) => {
     console.log("inside register Controller")
 
     const { username, email, password } = req.body;
-    console.log(username, email, password);
+    // console.log(username, email, password);
     // res.status(200).json("requuest sent successfully");
 
     try {
@@ -53,7 +53,7 @@ exports.viewProduct = async (req, res) => {
     try {
         // Fetch the product using findOne (assuming proId is unique)
         const productDetails = await products.findOne({ _id: proId });
-        console.log(productDetails);
+        // console.log(productDetails);
 
         if (productDetails) {
             res.status(200).json(productDetails);
@@ -69,7 +69,7 @@ exports.viewProduct = async (req, res) => {
 
 
 exports.addToCart = async (req, res) => {
-    const { productId, quantity, days } = req.body;
+    const { productId, quantity, days,size } = req.body;
     const userId = req.userId
     console.log(userId)
 
@@ -89,7 +89,7 @@ exports.addToCart = async (req, res) => {
             return res.status(200).json({ message: 'Product quantity updated in cart' });
 
         } else {
-            user.cart.push({ productId, quantity, days })
+            user.cart.push({ productId, quantity, days,size })
         }
 
         await user.save()

@@ -9,33 +9,24 @@ const productSchema = new mongoose.Schema({
         unique: true
     },
 
-    description: {  
+    description: {
         type: String,
         required: true
     },
 
-    category: {
-        Men: { type: Boolean, default: false },
-        Women: { type: Boolean, default: false },
-        Furniture: { type: Boolean, default: false }
-    },
+    category: { type: [String], enum: ['Men', 'Women', 'Furniture'], required: true },
 
     price: {
         type: Number,
         required: true
     },
 
-    size: {
-        S: { type: Boolean, default: false },
-        M: { type: Boolean, default: false },
-        L: { type: Boolean, default: false },
-        Freeize:{type: Boolean, default: false}
-    },
+    size: { type: [String], enum: ['S', 'M', 'L', 'Freeize'], required: true },
 
-    availability:{
-        type:Boolean,
-        default:false,
-        required:true
+    availability: {
+        type: Boolean,
+        default: false,
+        required: true
     },
 
     imgOne: {
