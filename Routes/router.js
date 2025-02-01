@@ -39,4 +39,6 @@ router.post('/add-to-cart',jwitMiddlware,userController.addToCart)
 
 router.get('/get-carts',jwitMiddlware,userController.getCarts)
 
+router.put('/change-cart/:carId', jwitMiddlware, userController.editCarts)
+
 module.exports = router

@@ -19,7 +19,8 @@ const userSchema = new mongoose.Schema({
             productId:{ type:mongoose.Schema.Types.ObjectId, ref:'products'},
             quantity:{type:Number, default:1},
             days:{type:Number, default:2},
-            size:{type:String}
+            size:{type:String},
+            total:{type:Number}
         },
     ],
 

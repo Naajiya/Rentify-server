@@ -69,7 +69,7 @@ exports.viewProduct = async (req, res) => {
 
 
 exports.addToCart = async (req, res) => {
-    const { productId, quantity, days,size } = req.body;
+    const { productId, quantity, days,size,total } = req.body;
     const userId = req.userId
     console.log(userId)
 
@@ -85,11 +85,14 @@ exports.addToCart = async (req, res) => {
         const cartItem = user.cart.find(item => item.productId.toString() == productId);
 
         if (cartItem) {
-            cartItem.quantity += quantity
+            cartItem.quantity += quantity;
+            cartItem.days = days; // Update days
+            cartItem.total = cartItem.quantity * product.price * cartItem.days;
             return res.status(200).json({ message: 'Product quantity updated in cart' });
 
         } else {
-            user.cart.push({ productId, quantity, days,size })
+            const total = quantity * product.price * days;
+            user.cart.push({ productId, quantity, days,size,total })
         }
 
         await user.save()
@@ -116,4 +119,37 @@ exports.getCarts=async(req,res)=>{
         res.status(401).json(err)
     }
 }
+
+exports.editCarts = async (req, res) => {
+    const { carId } = req.params; 
+    const { quantity, days,total } = req.body;
+    const userId = req.userId; 
+
+    console.log('Inside editCarts:', { userId, carId, quantity, days });
+
+    try {
+        // Find the user and update the specific cart item
+        const updatedUser = await users.findOneAndUpdate(
+            { _id: userId, "cart._id": carId }, 
+            {
+                $set: {
+                    "cart.$.quantity": quantity, // Update quantity
+                    "cart.$.days": days, // Update days
+                    "cart.$.total":total,
+                }
+            },
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User or cart item not found" });
+        }
+
+        res.json({ message: "Cart updated successfully", cart: updatedUser.cart });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
 
