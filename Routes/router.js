@@ -41,4 +41,6 @@ router.get('/get-carts',jwitMiddlware,userController.getCarts)
 
 router.put('/change-cart/:carId', jwitMiddlware, userController.editCarts)
 
+router.delete('/delete-cartItem/:cartId',jwtMiddlware,userController.deleteCart)
+
 module.exports = router

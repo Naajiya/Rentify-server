@@ -26,7 +26,7 @@ exports.addProduct = async (req, res) => {
 
     // Convert size to an array (ensure it's always an array)
     const sizeArray = Array.isArray(size) ? size : JSON.parse(size);
-
+    
     try {
         const existingProduct = await products.findOne({ name });
 

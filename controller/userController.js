@@ -69,40 +69,41 @@ exports.viewProduct = async (req, res) => {
 
 
 exports.addToCart = async (req, res) => {
-    const { productId, quantity, days,size,total } = req.body;
-    const userId = req.userId
-    console.log(userId)
+    const { productId, quantity, days, size } = req.body;
+    const userId = req.userId;
 
     try {
+        // Find the user and product
         const user = await users.findById(userId);
-        const product = await products.findById(productId)
+        const product = await products.findById(productId);
 
         if (!user || !product) {
             return res.status(404).json({ message: 'User or Product not found' });
         }
 
-        //   if product exists
-        const cartItem = user.cart.find(item => item.productId.toString() == productId);
+        // Check if the product already exists in the user's cart
+        const cartItem = user.cart.find(item => item.productId.toString() === productId && item.size === size);
 
         if (cartItem) {
+            // If the same product with the same size exists, increase the quantity and days
             cartItem.quantity += quantity;
-            cartItem.days = days; // Update days
+            // cartItem.days += days;
             cartItem.total = cartItem.quantity * product.price * cartItem.days;
-            return res.status(200).json({ message: 'Product quantity updated in cart' });
-
         } else {
+            // If the product does not exist in the cart or has a different size, add it as a new item
             const total = quantity * product.price * days;
-            user.cart.push({ productId, quantity, days,size,total })
+            user.cart.push({ productId, quantity, days, size, total });
         }
 
-        await user.save()
-        res.status(200).json({ message: 'ProdecT Added to Cart' })
-    } catch (err) {
-        console.log(err)
-        res.status(500).json({ message: 'server error', error: err.message })
-    }
-}
+        await user.save();
 
+        // Send response
+        res.status(200).json({ message: 'Product added/updated in cart successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
 
 exports.getCarts=async(req,res)=>{
     console.log("inside getCarts");
@@ -121,35 +122,77 @@ exports.getCarts=async(req,res)=>{
 }
 
 exports.editCarts = async (req, res) => {
-    const { carId } = req.params; 
-    const { quantity, days,total } = req.body;
-    const userId = req.userId; 
+    const { carId } = req.params; // Use cartId instead of carId for clarity
+    const { quantity, days } = req.body;
+    const userId = req.userId;
 
     console.log('Inside editCarts:', { userId, carId, quantity, days });
 
     try {
-        // Find the user and update the specific cart item
-        const updatedUser = await users.findOneAndUpdate(
-            { _id: userId, "cart._id": carId }, 
-            {
-                $set: {
-                    "cart.$.quantity": quantity, // Update quantity
-                    "cart.$.days": days, // Update days
-                    "cart.$.total":total,
-                }
-            },
-            { new: true } // Return the updated document
-        );
-
-        if (!updatedUser) {
-            return res.status(404).json({ message: "User or cart item not found" });
+        // Find the user and the specific cart item
+        const user = await users.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
         }
 
-        res.json({ message: "Cart updated successfully", cart: updatedUser.cart });
+        const cartItem = user.cart.id(carId);
+        if (!cartItem) {
+            return res.status(404).json({ message: "Cart item not found" });
+        }
+
+        // Update quantity and days
+        cartItem.quantity = quantity;
+        cartItem.days = days;
+
+        // Recalculate total based on the product price
+        const product = await products.findById(cartItem.productId);
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+
+        cartItem.total = quantity * product.price * days;
+
+        // Save the updated user document
+        await user.save();
+
+        // Send response
+        res.json({ message: "Cart updated successfully", updatedItem: cartItem });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({ message: "Server error", error: err.message });
     }
 };
 
 
+
+exports.deleteCart = async (req, res) => {
+    console.log('Inside delete cart');
+
+    const { cartId } = req.params; 
+    const userId = req.userId;
+
+    try {
+        // Find the user
+        const user = await users.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Find the cart item to delete
+        const cartItemIndex = user.cart.findIndex(item => item._id.toString() === cartId);
+        if (cartItemIndex === -1) {
+            return res.status(404).json({ message: "Cart item not found" });
+        }
+
+        // Remove the cart item from the user's cart array
+        user.cart.splice(cartItemIndex, 1);
+
+        await user.save();
+
+     
+        res.status(200).json({ message: "Cart item deleted successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error", error: err.message });
+    }
+};

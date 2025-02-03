@@ -23,6 +23,18 @@ const userSchema = new mongoose.Schema({
             total:{type:Number}
         },
     ],
+    address:[
+        {
+            name:{type:String, required:true},
+            phone:{type:Number,required:true},
+            pincode:{type:Number,required:true},
+            addresses:{type:String,required:true},
+            date:{type:Date,required:true},
+            city:{type:String,required:true},
+            aadharNumber:{type:String,required:true},
+            digSign:{type:String,required:true}
+        }
+    ]
 
 })
 
