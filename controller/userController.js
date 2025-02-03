@@ -196,3 +196,41 @@ exports.deleteCart = async (req, res) => {
         res.status(500).json({ message: "Server error", error: err.message });
     }
 };
+
+
+exports.addAddress = async (req, res) => {
+    const { name, phone, pincode, addresses, date, city, aadharNumber } = req.body;
+    const userId = req.userId;
+
+    if (!req.file) {
+        return res.status(400).json({ message: 'Digital signature file is required' });
+    }
+
+    const digSign = req.file;
+    const imgOneFilename = digSign.filename;
+
+    try {
+        const user = await users.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.address.push({
+            name,
+            phone,
+            pincode,
+            addresses,
+            date,
+            city,
+            aadharNumber,
+            digSign: imgOneFilename,
+        });
+
+        await user.save();
+        res.status(200).json({ message: 'Address added successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};

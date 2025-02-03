@@ -41,6 +41,8 @@ router.get('/get-carts',jwitMiddlware,userController.getCarts)
 
 router.put('/change-cart/:carId', jwitMiddlware, userController.editCarts)
 
-router.delete('/delete-cartItem/:cartId',jwtMiddlware,userController.deleteCart)
+router.delete('/delete-cartItem/:cartId',jwitMiddlware,userController.deleteCart)
+
+router.post('/add-address',multerMiddleware.single('digSign'),jwitMiddlware,userController.addAddress)
 
 module.exports = router
