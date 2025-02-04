@@ -1,6 +1,6 @@
 const users = require('../modal/userModal')
 const jwt = require('jsonwebtoken')
-const products = require('../modal/adProductModal')
+    const products = require('../modal/adProductModal')
 
 // register
 exports.userRegister = async (req, res) => {
@@ -199,38 +199,42 @@ exports.deleteCart = async (req, res) => {
 
 
 exports.addAddress = async (req, res) => {
-    const { name, phone, pincode, addresses, date, city, aadharNumber } = req.body;
+    console.log(req.file); // Check if the file is being received
+    console.log(req.body); // Check if other fields are being received
+  
+    const { name, phone, pincode, addresses, date, city, aadharNumber, acceptPolicy } = req.body;
     const userId = req.userId;
-
+  
     if (!req.file) {
-        return res.status(400).json({ message: 'Digital signature file is required' });
+      return res.status(400).json({ message: 'Digital signature file is required' });
     }
-
+  
     const digSign = req.file;
     const imgOneFilename = digSign.filename;
-
+  
     try {
-        const user = await users.findById(userId);
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        user.address.push({
-            name,
-            phone,
-            pincode,
-            addresses,
-            date,
-            city,
-            aadharNumber,
-            digSign: imgOneFilename,
-        });
-
-        await user.save();
-        res.status(200).json({ message: 'Address added successfully' });
+      const user = await users.findById(userId);
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      user.address.push({
+        name,
+        phone,
+        pincode,
+        addresses,
+        date,
+        city,
+        aadharNumber,
+        digSign: imgOneFilename,
+        acceptPolicy
+      });
+  
+      await user.save();
+      res.status(200).json({ message: 'Address added successfully' });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Internal server error' });
+      console.error(err);
+      res.status(500).json({ message: 'Internal server error' });
     }
-};
+  };

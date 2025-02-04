@@ -6,6 +6,8 @@ const adProductController = require('../controller/adProductController')
 const userController = require('../controller/userController');
 const jwtMiddlware = require('../middlewares/jwitMiddlware');
 
+const orderController = require('../controller/orderController')
+
 
 const router = new express.Router();
 
@@ -44,5 +46,9 @@ router.put('/change-cart/:carId', jwitMiddlware, userController.editCarts)
 router.delete('/delete-cartItem/:cartId',jwitMiddlware,userController.deleteCart)
 
 router.post('/add-address',multerMiddleware.single('digSign'),jwitMiddlware,userController.addAddress)
+
+router.post('/create-order',jwitMiddlware,orderController.createOrder)
+
+router.get('/get-user-order',jwitMiddlware, orderController.getUserOrder)
 
 module.exports = router
