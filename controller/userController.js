@@ -199,18 +199,8 @@ exports.deleteCart = async (req, res) => {
 
 
 exports.addAddress = async (req, res) => {
-    console.log(req.file); // Check if the file is being received
-    console.log(req.body); // Check if other fields are being received
-  
-    const { name, phone, pincode, addresses, date, city, aadharNumber, acceptPolicy } = req.body;
-    const userId = req.userId;
-  
-    if (!req.file) {
-      return res.status(400).json({ message: 'Digital signature file is required' });
-    }
-  
-    const digSign = req.file;
-    const imgOneFilename = digSign.filename;
+    const { name, phone, pincode, addresses,date, city, aadharNumber, acceptPolicy } = req.body;
+    const userId = req.userId; // Assuming userId is available in the request
   
     try {
       const user = await users.findById(userId);
@@ -219,22 +209,67 @@ exports.addAddress = async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
   
-      user.address.push({
+      // Check if it's the first address
+      const isFirstAddress = user.address.length === 0;
+  
+      // Validate digSign and aadharNumber for the first address
+      if (isFirstAddress) {
+        if (!req.file) {
+          return res.status(400).json({ message: 'Digital signature file is required for the first address' });
+        }
+        if (!aadharNumber) {
+          return res.status(400).json({ message: 'Aadhar number is required for the first address' });
+        }
+      }
+  
+      // Prepare the address object
+      const newAddress = {
         name,
         phone,
         pincode,
         addresses,
         date,
         city,
-        aadharNumber,
-        digSign: imgOneFilename,
         acceptPolicy
-      });
+      };
   
+      // Add digSign and aadharNumber only for the first address
+      if (isFirstAddress) {
+        newAddress.digSign = req.file.filename; // Assuming the file is uploaded and processed by multer
+        newAddress.aadharNumber = aadharNumber;
+      }
+  
+      // Add the new address to the user's address array
+      user.address.push(newAddress);
+  
+      // Save the user
       await user.save();
-      res.status(200).json({ message: 'Address added successfully' });
+
+      const addedAddress = user.address[user.address.length - 1];
+  
+      res.status(200).json(addedAddress);
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: 'Internal server error' });
     }
   };
+
+
+
+  exports.getAddresses = async (req, res) => {
+    const userId = req.userId; // Assuming userId is available in the request
+  
+    try {
+      const user = await users.findById(userId);
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      res.status(200).json({ addresses: user.address });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+

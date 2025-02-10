@@ -4,52 +4,58 @@ const orders = require('../modal/orderModal')
 
 
 exports.createOrder = async (req, res) => {
-    console.log('inside order');
-
-    const userId = req.userId
-
+    const userId = req.userId; // Assuming userId is available in the request
+    const { selectedAddressId, items } = req.body; // selectedAddressId is the _id of the address in the user's address array
+  
     try {
-        const user = await users.findById(userId).populate('cart.productId');
+      // Find the user
+      const user = await users.findById(userId);
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Get the selected address from the user's address array
+      const selectedAddress = user.address.find(addr => addr._id.toString() === selectedAddressId);
+  
+      if (!selectedAddress) {
+        return res.status(400).json({ message: 'Invalid address ID' });
+      }
+  
+      const orderItems = items.map(item => ({
+        product: item.productId._id, // Ensure only the product ID is used
+        quantity: item.quantity,
+        days: item.days,
+        size: item.size,
+        total: item.total
+    }));
 
-        if (!user) {
 
-            return res.status(404).json({ message: 'User not found' });
-        }
+      // Create a new order
+      const newOrder = new orders({
+        user: userId,
+        items: orderItems   , // Assuming items are passed in the request body
+        address: selectedAddress, // Store the selected address directly
+        status: 'Pending', // Default status
+        createdAt: new Date()
+      });
+  
+      // Save the order
+      await newOrder.save();
+  
+      res.status(200).json({ message: 'Order created successfully', order: newOrder });
 
-        if (!user.cart || user.cart.length === 0) {
-            return res.status(400).json({ message: 'No items in the cart' });
-        }
-
-        const orderItems = user.cart.map(item => ({
-            product: item.productId._id,
-            quantity: item.quantity,
-            days: item.days,
-            size: item.size,
-            total: item.total
-        }))
-
-        const newOrder = new orders({
-            user: userId,
-            items: orderItems,
-            status: 'pending'
-        })
-
-        await newOrder.save()
-
-        user.cart = [];
+      user.cart = [];
         await user.save();
-
-        res.status(201).json({
-            message: 'Order placed successfully',
-            order: newOrder
-        });
-
-
+        
     } catch (err) {
-        console.error('Error creating order:', err);
-        res.status(500).json({ message: 'Internal server error' });
+      console.error(err);
+      res.status(500).json({ message: 'Internal server error' });
     }
-}
+  };
+
+
+
 
 exports.getUserOrder = async (req, res) => {
     console.log('inside getUserOrder');

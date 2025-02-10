@@ -42,12 +42,14 @@ router.get('/product-details/:proId',userController.viewProduct)
 router.post('/add-to-cart',jwitMiddlware,userController.addToCart)
 
 router.get('/get-carts',jwitMiddlware,userController.getCarts)
-
+    
 router.put('/change-cart/:carId', jwitMiddlware, userController.editCarts)
 
 router.delete('/delete-cartItem/:cartId',jwitMiddlware,userController.deleteCart)
 
 router.post('/add-address',multerMiddleware.single('digSign'),jwitMiddlware,userController.addAddress)
+
+router.get('/get-address',jwitMiddlware,userController.getAddresses)
 
 router.post('/create-order',jwitMiddlware,orderController.createOrder)
 
