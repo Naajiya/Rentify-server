@@ -4,56 +4,66 @@ const orders = require('../modal/orderModal')
 
 
 exports.createOrder = async (req, res) => {
-    const userId = req.userId; // Assuming userId is available in the request
-    const { selectedAddressId, items } = req.body; // selectedAddressId is the _id of the address in the user's address array
-  
-    try {
+  const userId = req.userId; // Assuming userId is available in the request
+  const { selectedAddressId, items } = req.body; // selectedAddressId is the _id of the address in the user's address array
+
+  try {
       // Find the user
       const user = await users.findById(userId);
-  
+
       if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+          return res.status(404).json({ message: 'User not found' });
       }
-  
+
       // Get the selected address from the user's address array
       const selectedAddress = user.address.find(addr => addr._id.toString() === selectedAddressId);
-  
-      if (!selectedAddress) {
-        return res.status(400).json({ message: 'Invalid address ID' });
-      }
-  
-      const orderItems = items.map(item => ({
-        product: item.productId._id, // Ensure only the product ID is used
-        quantity: item.quantity,
-        days: item.days,
-        size: item.size,
-        total: item.total
-    }));
+      console.log(selectedAddress);
 
+      if (!selectedAddress) {
+          return res.status(400).json({ message: 'Invalid address ID' });
+      }
+
+      // Get the starting date of delivery from the selected address
+      const startingDate = new Date(selectedAddress.startingDate);
+
+      // Map through items and calculate the ending date for each product
+      const orderItems = items.map(item => {
+          const endingDate = new Date(startingDate);
+          endingDate.setDate(endingDate.getDate() + item.days); // Add the number of days to the starting date
+
+          return {
+              product: item.productId._id, // Ensure only the product ID is used
+              quantity: item.quantity,
+              days: item.days,
+              size: item.size,
+              total: item.total,
+              startingDate: startingDate, // Include the starting date
+              endingDate: endingDate // Include the calculated ending date
+          };
+      });
 
       // Create a new order
       const newOrder = new orders({
-        user: userId,
-        items: orderItems   , // Assuming items are passed in the request body
-        address: selectedAddress, // Store the selected address directly
-        status: 'Pending', // Default status
-        createdAt: new Date()
+          user: userId,
+          items: orderItems, // Include items with starting and ending dates
+          address: selectedAddress, // Store the selected address directly
+          status: 'Booked', // Default status
+          createdAt: new Date()
       });
-  
+
       // Save the order
       await newOrder.save();
-  
-      res.status(200).json({ message: 'Order created successfully', order: newOrder });
 
+      // Clear the user's cart
       user.cart = [];
-        await user.save();
-        
-    } catch (err) {
+      await user.save();
+
+      res.status(200).json({ message: 'Order created successfully', order: newOrder });
+  } catch (err) {
       console.error(err);
       res.status(500).json({ message: 'Internal server error' });
-    }
-  };
-
+  }
+};
 
 
 

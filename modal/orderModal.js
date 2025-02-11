@@ -27,6 +27,12 @@ const orderSchema = new mongoose.Schema({
       },
       total: {
         type: Number
+      },
+      startingDate:{
+        type:Date
+      },
+      endingDate:{
+        type:Date
       }
     }
   ],
