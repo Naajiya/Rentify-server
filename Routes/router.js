@@ -26,6 +26,7 @@ router.put('/update-product/:pid', multerMiddleware.fields([{ name: 'imgOne', ma
 
 router.get('/get-all-orders',orderController.getAllOrders)
 
+router.put('/update-status/:orderId',orderController.updateStatus)
 
 
 
@@ -54,5 +55,7 @@ router.get('/get-address',jwitMiddlware,userController.getAddresses)
 router.post('/create-order',jwitMiddlware,orderController.createOrder)
 
 router.get('/get-user-order',jwitMiddlware, orderController.getUserOrder)
+
+router.get('/get-search-products', adProductController.searchProducts)
 
 module.exports = router

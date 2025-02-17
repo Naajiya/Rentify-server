@@ -14,7 +14,7 @@ const productSchema = new mongoose.Schema({
         required: true
     },
 
-    category: { type: [String], enum: ['Men', 'Women', 'Furniture'], required: true },
+    category: { type: [String], enum: ['Men', 'Women', 'Furniture','Construction Equipment ','Electronics', ' Book', 'Musical Instruments'], required: true },
 
     price: {
         type: Number,
@@ -34,10 +34,10 @@ const productSchema = new mongoose.Schema({
         required: true
     },
 
-    imgTwo: {
-        type: String,
-        required: true
-    }
+    // imgTwo: {
+    //     type: String,
+    //     required: true
+    // }
 
 
 })

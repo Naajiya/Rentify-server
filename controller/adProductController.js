@@ -1,3 +1,4 @@
+const { query } = require('express');
 const products = require('../modal/adProductModal')
 
 
@@ -11,15 +12,15 @@ exports.addProduct = async (req, res) => {
     const { name, description, price, availability, category, size } = req.body;
     console.log(name, description, price);
 
-    const { imgOne, imgTwo } = req.files;
+    const { imgOne } = req.files;
     console.log(imgOne);
 
-    if (!imgOne || !imgTwo) {
+    if (!imgOne ) {
         return res.status(400).json({ message: 'Two images are required (imgOne and imgTwo).' });
     }
 
     const imgOneFilename = imgOne[0].filename;
-    const imgTwoFilename = imgTwo[0].filename;
+    // const imgTwoFilename = imgTwo[0].filename;
 
     // Convert category to an array (ensure it's always an array)
     const categoryArray = Array.isArray(category) ? category : [category];
@@ -42,7 +43,7 @@ exports.addProduct = async (req, res) => {
             size: sizeArray,  // Matches schema (array of strings)
             availability,
             imgOne: imgOneFilename,
-            imgTwo: imgTwoFilename
+            // imgTwo: imgTwoFilename
         });
 
         await newProduct.save();
@@ -143,3 +144,28 @@ exports.productCategory = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
+
+
+
+exports.searchProducts = async(req,res)=>{
+    console.log('search producsts')
+
+    const searchkey = req.query.search
+
+    const query ={
+        $or: [
+            { category: { $regex: searchkey, $options: "i" } },
+            { name: { $regex: searchkey, $options: "i" } } // Optional: Search by name too
+        ]
+    }
+
+    try{
+        const allProducts = await products.find(query)
+        res.status(200).json(allProducts)
+    }catch(err){
+        console.log(err)
+        res.status(500).json(err)
+    }
+    
+    
+}

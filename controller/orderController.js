@@ -6,7 +6,7 @@ const orders = require('../modal/orderModal')
 exports.createOrder = async (req, res) => {
     console.log('inside order')
     const userId = req.userId; // Assuming userId is available in the request
-    const { selectedAddressId, items } = req.body; // selectedAddressId is the _id of the address in the user's address array
+    const { selectedAddressId, items,paymentMethod } = req.body; // selectedAddressId is the _id of the address in the user's address array
 
     try {
         // Find the user
@@ -52,6 +52,7 @@ exports.createOrder = async (req, res) => {
         // Create a new order
         const newOrder = new orders({
             user: userId,
+            paymentMethod,
             items: orderItems, // Include items with starting and ending dates
             address: selectedAddress, // Store the selected address directly
             status: 'Booked', // Default status
@@ -71,6 +72,32 @@ exports.createOrder = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+
+exports.updateStatus=async (req,res)=>{
+    console.log('inside update status')
+
+    const {orderId}=req.params;
+    const {status}=req.body;
+
+    try{
+        const order = await orders.findById(orderId)
+
+        if(!order){
+            return res.status(404).json({message:'order not found'})
+        }
+
+        order.status=status
+
+        await order.save()
+
+        res.status(200).json({message:'order status updated',order})
+
+    }catch(err){
+        console.log(err)
+        res.status(500).json({message:'internal server error'})
+    }
+}
 
 
 

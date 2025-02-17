@@ -7,6 +7,9 @@ const orderSchema = new mongoose.Schema({
     ref: 'users',
     required: true
   },
+  paymentMethod:{
+    type:String
+  },
   items: [
     {
       product: {
@@ -45,7 +48,7 @@ const orderSchema = new mongoose.Schema({
       addresses: { type: String, required: true },
       date: { type: Date, required: true },
       city: { type: String, required: true },
-      aadharNumber: { type: String, unique: true },
+      aadharNumber: { type: String },
       digSign: { type: String},
       acceptPolicy: {
         type: Boolean,
