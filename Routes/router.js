@@ -22,7 +22,7 @@ router.get('/get-all-products',adProductController.getAllProduct)
 
 router.delete('/delete-product/:proId',adProductController.deleteProduct)
 
-router.put('/update-product/:pid', multerMiddleware.fields([{ name: 'imgOne', maxCount: 1 }, { name: 'imgTwo', maxCount: 1}]), adProductController.updateProduct)
+router.put('/update-product/:id', multerMiddleware.fields([{ name: 'imgOne', maxCount: 1 }, { name: 'imgTwo', maxCount: 1}]), adProductController.updateProduct)
 
 router.get('/get-all-orders',orderController.getAllOrders)
 
@@ -57,5 +57,7 @@ router.post('/create-order',jwitMiddlware,orderController.createOrder)
 router.get('/get-user-order',jwitMiddlware, orderController.getUserOrder)
 
 router.get('/get-search-products', adProductController.searchProducts)
+
+router.get('/random-product', adProductController.getRandomProduct)
 
 module.exports = router

@@ -1,4 +1,3 @@
-// models/Order.js
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
@@ -6,9 +5,6 @@ const orderSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users',
     required: true
-  },
-  paymentMethod:{
-    type:String
   },
   items: [
     {
@@ -48,7 +44,7 @@ const orderSchema = new mongoose.Schema({
       addresses: { type: String, required: true },
       date: { type: Date, required: true },
       city: { type: String, required: true },
-      aadharNumber: { type: String },
+      aadharNumber: { type: String, unique: false },
       digSign: { type: String},
       acceptPolicy: {
         type: Boolean,

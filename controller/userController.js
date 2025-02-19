@@ -68,6 +68,44 @@ exports.viewProduct = async (req, res) => {
 
 
 
+// exports.addToCart = async (req, res) => {
+//     const { productId, quantity, days, size } = req.body;
+//     const userId = req.userId;
+
+//     try {
+//         // Find the user and product
+//         const user = await users.findById(userId);
+//         const product = await products.findById(productId);
+
+//         if (!user || !product) {
+//             return res.status(404).json({ message: 'User or Product not found' });
+//         }
+
+//         // Check if the product already exists in the user's cart
+//         const cartItem = user.cart.find(item => item.productId.toString() === productId && item.size === size);
+
+//         if (cartItem) {
+//             // If the same product with the same size exists, increase the quantity and days
+//             cartItem.quantity += quantity;
+//             // cartItem.days += days;
+//             cartItem.total = cartItem.quantity * product.price * cartItem.days;
+//         } else {
+//             // If the product does not exist in the cart or has a different size, add it as a new item
+//             const total = quantity * product.price * days;
+//             user.cart.push({ productId, quantity, days, size, total });
+//         }
+
+//         await user.save();
+
+//         // Send response
+//         res.status(200).json({ message: 'Product added/updated in cart successfully' });
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ message: 'Server error', error: err.message });
+//     }
+// };
+
+
 exports.addToCart = async (req, res) => {
     const { productId, quantity, days, size } = req.body;
     const userId = req.userId;
@@ -89,21 +127,36 @@ exports.addToCart = async (req, res) => {
             cartItem.quantity += quantity;
             // cartItem.days += days;
             cartItem.total = cartItem.quantity * product.price * cartItem.days;
+
+            await user.save();
+
+            // Send response indicating the product was already in the cart and updated
+            res.status(200).json({ 
+                message: 'Product quantity updated in cart successfully', 
+                existsInCart: true, 
+                updatedCartItem: cartItem 
+            });
         } else {
             // If the product does not exist in the cart or has a different size, add it as a new item
             const total = quantity * product.price * days;
-            user.cart.push({ productId, quantity, days, size, total });
+            const newCartItem = { productId, quantity, days, size, total };
+            user.cart.push(newCartItem);
+
+            await user.save();
+
+            // Send response indicating the product was added to the cart
+            res.status(200).json({ 
+                message: 'Product added to cart successfully', 
+                existsInCart: false, 
+                newCartItem: newCartItem 
+            });
         }
-
-        await user.save();
-
-        // Send response
-        res.status(200).json({ message: 'Product added/updated in cart successfully' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
+
 
 exports.getCarts=async(req,res)=>{
     console.log("inside getCarts");

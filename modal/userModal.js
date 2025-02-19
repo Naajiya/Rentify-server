@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema({
             addresses: { type: String, required: true },
             date: { type: Date, required: true },
             city: { type: String, required: true },
-            aadharNumber: { type: String },
+            aadharNumber: { type: String, unique:false },
             digSign: { type: String },
             acceptPolicy:{ type: Boolean,
                 default: false,

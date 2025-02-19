@@ -88,39 +88,84 @@ exports.deleteProduct = async (req, res) => {
     }
 }
 
+// exports.updateProduct = async (req, res) => {
+//     console.log('update product');
+//     console.log(req.files); // Add logging to inspect req.files
+
+//     const { pid } = req.params;
+//     const { name, description, category, price, size, availability } = req.body;
+//     const { imgOne, imgTwo } = req.files || {}; // Safely destructuring
+
+//     const imgOneFile = req.files?.imgOne ? req.files.imgOne[0].filename : null;
+//     const imgTwoFile = req.files?.imgTwo ? req.files.imgTwo[0].filename : null;
+
+//     // Initialize updateFields before modifying it
+//     let updateFields = { 
+//         name, 
+//         description, 
+//         categoryArray: Array.isArray(category) ? category : [category], 
+//         price, 
+//         sizeArray: Array.isArray(size) ? size : JSON.parse(size), 
+//         availability 
+//     };
+
+//     // Add images only if they exist
+//     if (imgOneFile) updateFields.imgOne = imgOneFile;
+//     if (imgTwoFile) updateFields.imgTwo = imgTwoFile;
+
+//     try {
+//         const updateProduct = await products.findByIdAndUpdate(pid, updateFields, { new: true });
+//         res.status(200).json(updateProduct);
+//     } catch (err) {
+//         res.status(500).json({ message: 'Internal Server Error', error: err });
+//         console.error(err);
+//     }
+// };
+
+
+
+
+
+
 exports.updateProduct = async (req, res) => {
-    console.log('update product');
-    console.log(req.files); // Add logging to inspect req.files
-
-    const { pid } = req.params;
-    const { name, description, category, price, size, availability } = req.body;
-    const { imgOne, imgTwo } = req.files || {}; // Safely destructuring
-
-    const imgOneFile = req.files?.imgOne ? req.files.imgOne[0].filename : null;
-    const imgTwoFile = req.files?.imgTwo ? req.files.imgTwo[0].filename : null;
-
-    // Initialize updateFields before modifying it
-    let updateFields = { 
-        name, 
-        description, 
-        categoryArray: Array.isArray(category) ? category : [category], 
-        price, 
-        sizeArray: Array.isArray(size) ? size : JSON.parse(size), 
-        availability 
-    };
-
-    // Add images only if they exist
-    if (imgOneFile) updateFields.imgOne = imgOneFile;
-    if (imgTwoFile) updateFields.imgTwo = imgTwoFile;
+    const { id } = req.params; // Extract the product ID from the URL
+    console.log(id)
+    const { name, description, price, availability, category, size } = req.body;
 
     try {
-        const updateProduct = await products.findByIdAndUpdate(pid, updateFields, { new: true });
-        res.status(200).json(updateProduct);
+        // Find the product by ID
+        const product = await products.findById(id);
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        // Update fields if they are provided in the request
+        if (name) product.name = name;
+        if (description) product.description = description;
+        if (price) product.price = price;
+        if (availability !== undefined) product.availability = availability;
+        if (category) product.category = Array.isArray(category) ? category : [category];
+        if (size) product.size = Array.isArray(size) ? size : JSON.parse(size);
+
+        // Handle image updates (if new images are provided)
+        if (req.files && req.files.imgOne) {
+            product.imgOne = req.files.imgOne[0].filename; // Save the new image filename
+        }
+        if (req.files && req.files.imgTwo) {
+            product.imgTwo = req.files.imgTwo[0].filename; // Save the new image filename
+        }
+
+        // Save the updated product
+        await product.save();
+
+        res.status(200).json(product); // Return the updated product
     } catch (err) {
-        res.status(500).json({ message: 'Internal Server Error', error: err });
         console.error(err);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
 
 
@@ -168,4 +213,15 @@ exports.searchProducts = async(req,res)=>{
     }
     
     
+}
+
+
+
+exports.getRandomProduct =async(req,res)=>{
+    try{
+        const randomProducts = await products.aggregate([{$sample :{size : 8}}])
+        res.status(200).json(randomProducts)
+    }catch(err){
+        console.log(err)
+    }
 }
