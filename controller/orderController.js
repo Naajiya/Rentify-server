@@ -1,34 +1,30 @@
 const users = require('../modal/userModal')
 const products = require('../modal/adProductModal')
-const orders = require('../modal/orderModal')
+const orders = require('../modal/orderModal');
+const revenues = require('../modal/RevenueModal');
 
 
 exports.createOrder = async (req, res) => {
-    console.log('inside order')
+    console.log('inside order');
     const userId = req.userId; // Assuming userId is available in the request
-    const { selectedAddressId, items,paymentMethod } = req.body; // selectedAddressId is the _id of the address in the user's address array
+    const { selectedAddressId, items, paymentMethod } = req.body;
 
     try {
         // Find the user
         const user = await users.findById(userId);
-
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
         // Get the selected address from the user's address array
         const selectedAddress = user.address.find(addr => addr._id.toString() === selectedAddressId);
-        console.log(selectedAddress)
         if (!selectedAddress) {
             return res.status(400).json({ message: 'Invalid address ID' });
         }
 
         // Validate startingDate
-        //   const startingDate = new Date(selectedAddress.startingDate);
-        //   console.log(startingDate)
-        const dateString = selectedAddress.date; // Example date string
+        const dateString = selectedAddress.date;
         const startingDate = new Date(dateString);
-        console.log(startingDate)
         if (isNaN(startingDate.getTime())) {
             return res.status(400).json({ message: 'Invalid starting date in the selected address' });
         }
@@ -45,18 +41,21 @@ exports.createOrder = async (req, res) => {
                 size: item.size,
                 total: item.total,
                 startingDate: startingDate, // Include the starting date
-                endingDate: endingDate // Include the calculated ending date
+                endingDate: endingDate, // Include the calculated ending date
             };
         });
+
+        // Calculate the grandTotal by summing up the total of all items
+        const grandTotal = items.reduce((sum, item) => sum + item.total, 0);
 
         // Create a new order
         const newOrder = new orders({
             user: userId,
             paymentMethod,
-            items: orderItems, // Include items with starting and ending dates
-            address: selectedAddress, // Store the selected address directly
-            status: 'Booked', // Default status
-            createdAt: new Date()
+            items: orderItems,
+            address: selectedAddress,
+            status: 'Booked',
+            createdAt: new Date(),
         });
 
         // Save the order
@@ -66,6 +65,51 @@ exports.createOrder = async (req, res) => {
         user.cart = [];
         await user.save();
 
+        // Prepare product details for revenue calculation
+        const prodDetls = items.map(item => ({
+            productId: item.productId._id.toString(), // Ensure productId is a String
+            category: item.productId.category[0], // Use the first category
+            total: item.total,
+        }));
+
+        // Find the existing revenue document
+        let existingRevenue = await revenues.findOne({});
+
+        if (existingRevenue) {
+            // Update existing products and grandTotal
+            prodDetls.forEach(newProduct => {
+                const existingProduct = existingRevenue.products.find(
+                    prod => prod.productId === newProduct.productId // Compare as Strings
+                );
+
+                if (existingProduct) {
+                    // If the product exists, update its total
+                    existingProduct.total += newProduct.total;
+                    existingProduct.count = (existingProduct.count || 0) + 1;
+                } else {
+                    // If the product doesn't exist, add it to the products array
+                    newProduct.count = 1;
+                    existingRevenue.products.push(newProduct);
+                }
+            });
+
+            // Update the grandTotal
+            existingRevenue.grandTotal += grandTotal;
+
+            // Save the updated revenue document
+            await existingRevenue.save();
+        } else {
+            // If no existing revenue document is found, create a new one
+            const newRevnu = new revenues({
+                products: prodDetls,
+                grandTotal: grandTotal,
+               
+                date: new Date(),
+            });
+
+            await newRevnu.save();
+        }
+
         res.status(200).json({ message: 'Order created successfully', order: newOrder });
     } catch (err) {
         console.error(err);
@@ -74,28 +118,28 @@ exports.createOrder = async (req, res) => {
 };
 
 
-exports.updateStatus=async (req,res)=>{
+exports.updateStatus = async (req, res) => {
     console.log('inside update status')
 
-    const {orderId}=req.params;
-    const {status}=req.body;
+    const { orderId } = req.params;
+    const { status } = req.body;
 
-    try{
+    try {
         const order = await orders.findById(orderId)
 
-        if(!order){
-            return res.status(404).json({message:'order not found'})
+        if (!order) {
+            return res.status(404).json({ message: 'order not found' })
         }
 
-        order.status=status
+        order.status = status
 
         await order.save()
 
-        res.status(200).json({message:'order status updated',order})
+        res.status(200).json({ message: 'order status updated', order })
 
-    }catch(err){
+    } catch (err) {
         console.log(err)
-        res.status(500).json({message:'internal server error'})
+        res.status(500).json({ message: 'internal server error' })
     }
 }
 

@@ -7,6 +7,7 @@ const userController = require('../controller/userController');
 const jwtMiddlware = require('../middlewares/jwitMiddlware');
 
 const orderController = require('../controller/orderController')
+const revenueController = require('../controller/revenueController')
 
 
 const router = new express.Router();
@@ -27,6 +28,12 @@ router.put('/update-product/:id', multerMiddleware.fields([{ name: 'imgOne', max
 router.get('/get-all-orders',orderController.getAllOrders)
 
 router.put('/update-status/:orderId',orderController.updateStatus)
+
+router.get('/get-revenue', revenueController.getRevenueDetails)
+
+router.post('/add-expense', revenueController.addExpense)
+
+router.get('/get-income', revenueController.getIncome)
 
 
 

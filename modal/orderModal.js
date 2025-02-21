@@ -36,6 +36,9 @@ const orderSchema = new mongoose.Schema({
     }
   ],
 
+  paymentMethod:{
+    type:String
+  },
   address: [
     {
       name: { type: String, required: true },
