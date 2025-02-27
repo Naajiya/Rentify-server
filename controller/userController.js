@@ -1,6 +1,6 @@
 const users = require('../modal/userModal')
 const jwt = require('jsonwebtoken')
-    const products = require('../modal/adProductModal')
+const products = require('../modal/adProductModal')
 
 // register
 exports.userRegister = async (req, res) => {
@@ -37,7 +37,7 @@ exports.userLogin = async (req, res) => {
         if (existingUser) {
             const token = jwt.sign({ userId: existingUser._id }, process.env.JWT_PASSWORD)
             res.status(200).json({ user: existingUser, token })
-            
+
         } else {
             res.status(404).json("invalid username or password")
 
@@ -131,10 +131,10 @@ exports.addToCart = async (req, res) => {
             await user.save();
 
             // Send response indicating the product was already in the cart and updated
-            res.status(200).json({ 
-                message: 'Product quantity updated in cart successfully', 
-                existsInCart: true, 
-                updatedCartItem: cartItem 
+            res.status(200).json({
+                message: 'Product quantity updated in cart successfully',
+                existsInCart: true,
+                updatedCartItem: cartItem
             });
         } else {
             // If the product does not exist in the cart or has a different size, add it as a new item
@@ -145,10 +145,10 @@ exports.addToCart = async (req, res) => {
             await user.save();
 
             // Send response indicating the product was added to the cart
-            res.status(200).json({ 
-                message: 'Product added to cart successfully', 
-                existsInCart: false, 
-                newCartItem: newCartItem 
+            res.status(200).json({
+                message: 'Product added to cart successfully',
+                existsInCart: false,
+                newCartItem: newCartItem
             });
         }
     } catch (err) {
@@ -158,17 +158,17 @@ exports.addToCart = async (req, res) => {
 };
 
 
-exports.getCarts=async(req,res)=>{
+exports.getCarts = async (req, res) => {
     console.log("inside getCarts");
 
     const userId = req.userId
     console.log(userId)
-    try{
-        const userCart = await users.findOne({_id:userId}).populate("cart.productId")
+    try {
+        const userCart = await users.findOne({ _id: userId }).populate("cart.productId")
         console.log(userCart)
-        
+
         res.status(200).json(userCart)
-    }catch(err){
+    } catch (err) {
         console.log(err)
         res.status(401).json(err)
     }
@@ -221,7 +221,7 @@ exports.editCarts = async (req, res) => {
 exports.deleteCart = async (req, res) => {
     console.log('Inside delete cart');
 
-    const { cartId } = req.params; 
+    const { cartId } = req.params;
     const userId = req.userId;
 
     try {
@@ -242,7 +242,7 @@ exports.deleteCart = async (req, res) => {
 
         await user.save();
 
-     
+
         res.status(200).json({ message: "Cart item deleted successfully" });
     } catch (err) {
         console.error(err);
@@ -252,77 +252,118 @@ exports.deleteCart = async (req, res) => {
 
 
 exports.addAddress = async (req, res) => {
-    const { name, phone, pincode, addresses,date, city, aadharNumber, acceptPolicy } = req.body;
+    const { name, phone, pincode, addresses, date, city, aadharNumber, acceptPolicy } = req.body;
     const userId = req.userId; // Assuming userId is available in the request
-  
+
     try {
-      const user = await users.findById(userId);
-  
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      // Check if it's the first address
-      const isFirstAddress = user.address.length === 0;
-  
-      // Validate digSign and aadharNumber for the first address
-      if (isFirstAddress) {
-        if (!req.file) {
-          return res.status(400).json({ message: 'Digital signature file is required for the first address' });
-        }
-        if (!aadharNumber) {
-          return res.status(400).json({ message: 'Aadhar number is required for the first address' });
-        }
-      }
-  
-      // Prepare the address object
-      const newAddress = {
-        name,
-        phone,
-        pincode,
-        addresses,
-        date,
-        city,
-        acceptPolicy
-      };
-  
-      // Add digSign and aadharNumber only for the first address
-      if (isFirstAddress) {
-        newAddress.digSign = req.file.filename; // Assuming the file is uploaded and processed by multer
-        newAddress.aadharNumber = aadharNumber;
-      }
-  
-      // Add the new address to the user's address array
-      user.address.push(newAddress);
-  
-      // Save the user
-      await user.save();
+        const user = await users.findById(userId);
 
-      const addedAddress = user.address[user.address.length - 1];
-  
-      res.status(200).json(addedAddress);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check if it's the first address
+        const isFirstAddress = user.address.length === 0;
+
+        // Validate digSign and aadharNumber for the first address
+        if (isFirstAddress) {
+            if (!req.file) {
+                return res.status(400).json({ message: 'Digital signature file is required for the first address' });
+            }
+            if (!aadharNumber) {
+                return res.status(400).json({ message: 'Aadhar number is required for the first address' });
+            }
+        }
+
+        // Prepare the address object
+        const newAddress = {
+            name,
+            phone,
+            pincode,
+            addresses,
+            date,
+            city,
+            acceptPolicy
+        };
+
+        // Add digSign and aadharNumber only for the first address
+        if (isFirstAddress) {
+            newAddress.digSign = req.file.filename; // Assuming the file is uploaded and processed by multer
+            newAddress.aadharNumber = aadharNumber;
+        }
+
+        // Add the new address to the user's address array
+        user.address.push(newAddress);
+
+        // Save the user
+        await user.save();
+
+        const addedAddress = user.address[user.address.length - 1];
+
+        res.status(200).json(addedAddress);
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: 'Internal server error' });
+        console.error(err);
+        res.status(500).json({ message: 'Internal server error' });
     }
-  };
+};
 
 
 
-  exports.getAddresses = async (req, res) => {
+exports.updateAdderss = async (req, res) => {
+
+    const { adId } = req.params
+    console.log(adId)
+
+    const userId = req.userId;
+    console.log(userId)
+
+    const { date } = req.body;
+    console.log(date)
+
+    const user = await users.findById(userId)
+
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    try {
+
+        const addressToUpdate = user.address.find(addr => addr.id.toString() === adId)
+        if (!addressToUpdate) {
+            console.log('address not found');
+            return res.status(404).json({ message: "Address not found" });
+        }
+
+        addressToUpdate.date = date
+
+        await user.save();  
+
+        console.log('address updates successfully')
+        res.status(200).json(user)
+        
+    } catch (err) {
+        console.log('eror updating address date', err)
+        res.status(500).json('server error')
+    }
+
+}
+
+
+
+exports.getAddresses = async (req, res) => {
     const userId = req.userId; // Assuming userId is available in the request
-  
+
     try {
-      const user = await users.findById(userId);
-  
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      res.status(200).json({ addresses: user.address });
+        const user = await users.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json({ addresses: user.address });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: 'Internal server error' });
+        console.error(err);
+        res.status(500).json({ message: 'Internal server error' });
     }
-  };
+};
 

@@ -9,13 +9,13 @@ exports.addProduct = async (req, res) => {
     console.log('inside add product');
     console.log(req.body);
 
-    const { name, description, price, availability, category, size } = req.body;
+    const { name, description, price, instock, category, size } = req.body;
     console.log(name, description, price);
 
     const { imgOne } = req.files;
     console.log(imgOne);
 
-    if (!imgOne ) {
+    if (!imgOne) {
         return res.status(400).json({ message: 'Two images are required (imgOne and imgTwo).' });
     }
 
@@ -27,7 +27,7 @@ exports.addProduct = async (req, res) => {
 
     // Convert size to an array (ensure it's always an array)
     const sizeArray = Array.isArray(size) ? size : JSON.parse(size);
-    
+
     try {
         const existingProduct = await products.findOne({ name });
 
@@ -41,7 +41,7 @@ exports.addProduct = async (req, res) => {
             category: categoryArray,  // Matches schema (array of strings)
             price,
             size: sizeArray,  // Matches schema (array of strings)
-            availability,
+            instock,
             imgOne: imgOneFilename,
             // imgTwo: imgTwoFilename
         });
@@ -54,6 +54,7 @@ exports.addProduct = async (req, res) => {
         res.status(401).json(err);
     }
 };
+
 
 
 
@@ -130,7 +131,7 @@ exports.deleteProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     const { id } = req.params; // Extract the product ID from the URL
     console.log(id)
-    const { name, description, price, availability, category, size } = req.body;
+    const { name, description, price, instock, category, size } = req.body;
 
     try {
         // Find the product by ID
@@ -144,7 +145,8 @@ exports.updateProduct = async (req, res) => {
         if (name) product.name = name;
         if (description) product.description = description;
         if (price) product.price = price;
-        if (availability !== undefined) product.availability = availability;
+        if (instock) product.instock = instock;
+        // if (availability !== undefined) product.availability = availability;
         if (category) product.category = Array.isArray(category) ? category : [category];
         if (size) product.size = Array.isArray(size) ? size : JSON.parse(size);
 
@@ -192,36 +194,101 @@ exports.productCategory = async (req, res) => {
 
 
 
-exports.searchProducts = async(req,res)=>{
+exports.searchProducts = async (req, res) => {
     console.log('search producsts')
 
     const searchkey = req.query.search
 
-    const query ={
+    const query = {
         $or: [
             { category: { $regex: searchkey, $options: "i" } },
             { name: { $regex: searchkey, $options: "i" } } // Optional: Search by name too
         ]
     }
 
-    try{
+    try {
         const allProducts = await products.find(query)
         res.status(200).json(allProducts)
-    }catch(err){
+    } catch (err) {
         console.log(err)
         res.status(500).json(err)
     }
-    
-    
+
+
 }
 
 
 
-exports.getRandomProduct =async(req,res)=>{
-    try{
-        const randomProducts = await products.aggregate([{$sample :{size : 8}}])
+exports.getRandomProduct = async (req, res) => {
+    try {
+        const randomProducts = await products.aggregate([{ $sample: { size: 8 } }])
         res.status(200).json(randomProducts)
-    }catch(err){
+    } catch (err) {
         console.log(err)
     }
 }
+
+
+
+exports.ChangeStock = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Find the product by ID
+        const prodDetails = await products.findById(id);
+
+        // Check if the product exists
+        if (!prodDetails) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        // Check if the product is in stock
+        if (prodDetails.instock > 0) {
+            // Decrease the instock value by 1
+            prodDetails.instock -= 1;
+
+            // Save the updated product details to the database
+            await prodDetails.save();
+
+            // Return a success response
+            return res.status(200).json({ message: 'Stock updated successfully', product: prodDetails });
+        } else {
+            // Return a response if the product is out of stock
+            return res.status(400).json({ message: 'Product is out of stock' });
+        }
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
+
+exports.AddStock = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Find the product by ID
+        const prodDetails = await products.findById(id);
+
+        // Check if the product exists
+        if (!prodDetails) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        // Check if the product is in stock
+      
+            // Decrease the instock value by 1
+            prodDetails.instock += 1;
+
+            // Save the updated product details to the database
+            await prodDetails.save();
+
+            // Return a success response
+            return res.status(200).json({ message: 'Stock updated successfully', product: prodDetails });
+       
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};

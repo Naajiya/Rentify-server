@@ -35,6 +35,11 @@ router.post('/add-expense', revenueController.addExpense)
 
 router.get('/get-income', revenueController.getIncome)
 
+router.get('/chang-stock/:id', adProductController.ChangeStock)
+
+router.put('/add-stock/:id',adProductController.AddStock)
+
+
 
 
 // user
@@ -66,5 +71,8 @@ router.get('/get-user-order',jwitMiddlware, orderController.getUserOrder)
 router.get('/get-search-products', adProductController.searchProducts)
 
 router.get('/random-product', adProductController.getRandomProduct)
+
+router.put('/change-date/:adId', jwitMiddlware, userController.updateAdderss)
+
 
 module.exports = router

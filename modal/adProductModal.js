@@ -23,10 +23,9 @@ const productSchema = new mongoose.Schema({
 
     size: { type: [String], enum: ['S', 'M', 'L', 'Freeize'], required: true },
 
-    availability: {
-        type: Boolean,
-        default: false,
-        required: true
+    instock:{
+        type:Number,
+        require:true
     },
 
     imgOne: {
