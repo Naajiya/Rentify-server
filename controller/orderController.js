@@ -103,7 +103,7 @@ exports.createOrder = async (req, res) => {
             const newRevnu = new revenues({
                 products: prodDetls,
                 grandTotal: grandTotal,
-               
+
                 date: new Date(),
             });
 
@@ -180,6 +180,12 @@ exports.getAllOrders = async (req, res) => {
         if (!allOrders || allOrders.length === 0) {
             return res.status(404).json({ message: 'No orders found' });
         }
+
+        allOrders.sort((a, b) => {
+            const dateA = new Date(a.items[0].startingDate);
+            const dateB = new Date(b.items[0].startingDate);
+            return dateA - dateB;
+        })
 
         // Return the orders
         res.status(200).json({
