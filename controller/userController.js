@@ -48,6 +48,34 @@ exports.userLogin = async (req, res) => {
 }
 
 
+
+exports.editProfile = async (req, res) => { 
+    const { username, email, phone } = req.body
+    console.log(username, email, phone)
+    const userId = req.userId
+    const uploadImg = req.file ? req.file.filename : null;
+
+    try {
+        const user = await users.findById(userId);
+
+        const profileImage = uploadImg || user.profile;
+
+        const updateUser = await users.findByIdAndUpdate(
+            userId, 
+            { username, email, phone, profile: profileImage },
+            { new: true }
+        );
+        updateUser.save()
+        res.status(200).json(updateUser)
+
+    } catch (err) {
+        res.status(500).json(err)
+    }
+}
+
+
+
+
 exports.viewProduct = async (req, res) => {
     const { proId } = req.params;
     try {
@@ -68,42 +96,7 @@ exports.viewProduct = async (req, res) => {
 
 
 
-// exports.addToCart = async (req, res) => {
-//     const { productId, quantity, days, size } = req.body;
-//     const userId = req.userId;
 
-//     try {
-//         // Find the user and product
-//         const user = await users.findById(userId);
-//         const product = await products.findById(productId);
-
-//         if (!user || !product) {
-//             return res.status(404).json({ message: 'User or Product not found' });
-//         }
-
-//         // Check if the product already exists in the user's cart
-//         const cartItem = user.cart.find(item => item.productId.toString() === productId && item.size === size);
-
-//         if (cartItem) {
-//             // If the same product with the same size exists, increase the quantity and days
-//             cartItem.quantity += quantity;
-//             // cartItem.days += days;
-//             cartItem.total = cartItem.quantity * product.price * cartItem.days;
-//         } else {
-//             // If the product does not exist in the cart or has a different size, add it as a new item
-//             const total = quantity * product.price * days;
-//             user.cart.push({ productId, quantity, days, size, total });
-//         }
-
-//         await user.save();
-
-//         // Send response
-//         res.status(200).json({ message: 'Product added/updated in cart successfully' });
-//     } catch (err) {
-//         console.error(err);
-//         res.status(500).json({ message: 'Server error', error: err.message });
-//     }
-// };
 
 
 exports.addToCart = async (req, res) => {
@@ -336,11 +329,11 @@ exports.updateAdderss = async (req, res) => {
 
         addressToUpdate.date = date
 
-        await user.save();  
+        await user.save();
 
         console.log('address updates successfully')
         res.status(200).json(user)
-        
+
     } catch (err) {
         console.log('eror updating address date', err)
         res.status(500).json('server error')

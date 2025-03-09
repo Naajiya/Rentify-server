@@ -74,5 +74,7 @@ router.get('/random-product', adProductController.getRandomProduct)
 
 router.put('/change-date/:adId', jwitMiddlware, userController.updateAdderss)
 
+router.put('/edit-profile',multerMiddleware.single('profile'), jwitMiddlware ,userController.editProfile)
+
 
 module.exports = router

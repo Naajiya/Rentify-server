@@ -14,6 +14,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    phone:{
+        type: Number,
+    },
+    profile:{
+        type: String,
+    },
     cart: [
         {
             productId: { type: mongoose.Schema.Types.ObjectId, ref: 'products' },
@@ -38,8 +44,6 @@ const userSchema = new mongoose.Schema({
                 required: true}
         }
     ],
-
-    
 
 })
 
